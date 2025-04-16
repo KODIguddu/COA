@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Binary & Decimal Converter Visualizer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f7fafc;
+      color: #222;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px 8px 60px 8px;
+    }
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 0.2em;
+      font-size: 2em;
+    }
+    .desc {
+      margin-bottom: 1.5em;
+      color: #444;
+    }
+    .mode-switch {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1.2em;
+      align-items: center;
+    }
+    .mode-btn {
+      background: #d1e7fd;
+      color: #2c3e50;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .mode-btn.active {
+      background: #3498db;
+      color: #fff;
+      font-weight: bold;
+    }
+    .input-area {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #d6e6f3;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .input-area label {
+      font-weight: 500;
+      margin-right: 10px;
+    }
+    .input-area input[type="text"], .input-area input[type="number"] {
+      padding: 6px 10px;
+      border-radius: 5px;
+      border: 1px solid #bbb;
+      font-size: 1em;
+      width: 120px;
+      margin-right: 10px;
+    }
+    .input-area button {
+      background: #3498db;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .input-area button:active {
+      background: #217dbb;
+    }
+    .steps-area {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #d6e6f3;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+    .steps-area h2 {
+      font-size: 1.1em;
+      color: #3498db;
+      margin-bottom: 0.7em;
+    }
+    .steps-list {
+      margin: 0;
+      padding-left: 18px;
+      color: #222;
+    }
+    .result {
+      background: #eaf6ff;
+      border-left: 5px solid #3498db;
+      padding: 10px 16px;
+      border-radius: 4px;
+      color: #222;
+      font-size: 1.1em;
+      margin-bottom: 1em;
+      font-weight: bold;
+    }
+    @media (max-width: 500px) {
+      .container {
+        padding: 10px 2px 40px 2px;
+      }
+      .input-area, .steps-area {
+        padding: 12px;
+      }
+      .input-area input, .input-area button {
+        width: 90px;
+        font-size: 0.95em;
+        padding: 5px 7px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Binary & Decimal Converter Visualizer</h1>
+    <div class="desc">
+      Convert numbers between binary and decimal with <b>step-by-step explanations</b>.<br>
+      Perfect for learning how conversions really work!
+    </div>
+    <div class="mode-switch">
+      <button class="mode-btn active" id="btn-bin2dec" onclick="setMode('bin2dec')">Binary ➔ Decimal</button>
+      <button class="mode-btn" id="btn-dec2bin" onclick="setMode('dec2bin')">Decimal ➔ Binary</button>
+    </div>
+    <div class="input-area">
+      <form id="convertForm" onsubmit="event.preventDefault(); convert();">
+        <label id="inputLabel" for="inputNum">Binary Number:</label>
+        <input type="text" id="inputNum" maxlength="32" placeholder="e.g. 101101">
+        <button type="submit">Convert</button>
+      </form>
+    </div>
+    <div class="result" id="result" style="display:none"></div>
+    <div class="steps-area" id="stepsArea" style="display:none">
+      <h2>Step-by-Step Solution</h2>
+      <ol class="steps-list" id="stepsList"></ol>
+    </div>
+  </div>
+  <script>
+    let mode = 'bin2dec';
+
+    function setMode(newMode) {
+      mode = newMode;
+      document.getElementById('btn-bin2dec').classList.toggle('active', mode === 'bin2dec');
+      document.getElementById('btn-dec2bin').classList.toggle('active', mode === 'dec2bin');
+      document.getElementById('inputLabel').textContent = mode === 'bin2dec' ? "Binary Number:" : "Decimal Number:";
+      document.getElementById('inputNum').value = '';
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('stepsArea').style.display = 'none';
+      document.getElementById('inputNum').placeholder = mode === 'bin2dec' ? "e.g. 101101" : "e.g. 45";
+      document.getElementById('inputNum').type = mode === 'bin2dec' ? "text" : "number";
+    }
+
+    function convert() {
+      const input = document.getElementById('inputNum').value.trim();
+      let result = '';
+      let steps = [];
+      if (mode === 'bin2dec') {
+        if (!/^[01]+$/.test(input)) {
+          showError("Please enter a valid binary number (only 0 and 1).");
+          return;
+        }
+        let sum = 0;
+        let len = input.length;
+        for (let i = 0; i < len; i++) {
+          let bit = parseInt(input[i]);
+          let power = len - 1 - i;
+          let value = bit * Math.pow(2, power);
+          steps.push(`Bit <b>${bit}</b> × 2<sup>${power}</sup> = <b>${value}</b>`);
+          sum += value;
+        }
+        result = `Decimal Value: <b>${sum}</b>`;
+      } else {
+        let num = parseInt(input);
+        if (isNaN(num) || num < 0) {
+          showError("Please enter a valid non-negative decimal number.");
+          return;
+        }
+        if (num === 0) {
+          steps.push("0 ÷ 2 = 0, remainder = 0");
+          result = `Binary Value: <b>0</b>`;
+        } else {
+          let n = num;
+          let binArr = [];
+          let stepNum = 1;
+          while (n > 0) {
+            let rem = n % 2;
+            steps.push(`Step ${stepNum}: ${n} ÷ 2 = ${Math.floor(n/2)}, remainder = <b>${rem}</b>`);
+            binArr.push(rem);
+            n = Math.floor(n / 2);
+            stepNum++;
+          }
+          binArr.reverse();
+          result = `Binary Value: <b>${binArr.join('')}</b>`;
+        }
+      }
+      showResult(result, steps);
+    }
+
+    function showResult(result, steps) {
+      document.getElementById('result').innerHTML = result;
+      document.getElementById('result').style.display = '';
+      let stepsList = document.getElementById('stepsList');
+      stepsList.innerHTML = '';
+      steps.forEach(step => {
+        let li = document.createElement('li');
+        li.innerHTML = step;
+        stepsList.appendChild(li);
+      });
+      document.getElementById('stepsArea').style.display = '';
+    }
+
+    function showError(msg) {
+      document.getElementById('result').innerHTML = msg;
+      document.getElementById('result').style.display = '';
+      document.getElementById('stepsArea').style.display = 'none';
+    }
+
+    // Initialize
+    setMode('bin2dec');
+  </script>
+</body>
+</html>
